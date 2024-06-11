@@ -1,31 +1,31 @@
-# tubbly
+# **Tubbly 🤝 Casper Network**
 
-## Usage
-It's recommended to install 
-[cargo-odra](https://github.com/odradev/cargo-odra) first.
+### 📜 Smart Contract for Requesting Balance Change and Confirmation
 
-### Build
+This smart contract allows users to request changes to their balance
+and requires confirmation by the contract owner before the changes can be executed.
+It provides a secure and transparent way to manage balance adjustments within the contract.
 
-```
-$ cargo odra build
-```
-To build a wasm file, you need to pass the -b parameter. 
-The result files will be placed in `${project-root}/wasm` directory.
+### 🔒 Authority
 
-```
-$ cargo odra build -b casper
-```
+The contract owner has the authority to approve or reject balance change requests made by users.
+Only after confirmation by the contract owner will the requested changes be applied to the user's balance.
 
-### Test
-To run test on your local machine, you can basically execute the command:
+### 🚀 Features:
 
-```
-$ cargo odra test
-```
+- Users can submit requests to increase or decrease their balance.
+- Requests are pending until confirmed by the contract owner.
+- The contract owner has the sole authority to confirm or reject balance change requests.
+- Once confirmed, the requested balance changes are applied to the user's balance.
+- Provides transparency and accountability in managing balance adjustments.
 
-To test actual wasm files against a backend, 
-you need to specify the backend passing -b argument to `cargo-odra`.
+### 🔨 Usage:
 
-```
-$ cargo odra test -b casper
-```
+1.  Users initiate a balance change request by calling the appropriate function with the desired amount.
+2.  The request is added to the pending list until confirmed by the contract owner.
+3.  The contract owner reviews pending requests and can confirm them.
+4.  Confirmed requests are executed, and the user's balance is updated accordingly.
+
+### 📝 Note
+
+This contract assumes that the contract owner is a trusted entity with the authority to manage balance changes within the contract.
