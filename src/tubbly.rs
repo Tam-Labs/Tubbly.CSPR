@@ -38,7 +38,6 @@ pub struct Tubbly {
     owner: Var<Option<Address>>,
     balances: Mapping<Address, BalanceType>,
     requests: Mapping<RequestId, Option<Request>>,
-    next_id: Var<RequestId>,
 }
 
 #[odra::odra_type]
@@ -54,6 +53,7 @@ pub enum Error {
     OwnerIsNotInitialized = 3,
     IncorrectRequestId = 4,
     RequestIdExhausted = 5,
+    RequestIdAlreadyUserd = 6,
 }
 
 #[odra::event]
@@ -80,7 +80,6 @@ impl Tubbly {
         }
 
         self.owner.set(Some(owner));
-        self.next_id.set(RequestId::from(0));
 
         self.env().emit_event(OwnershipChanged {
             prev_owner: None,
@@ -88,15 +87,13 @@ impl Tubbly {
         });
     }
 
-    pub fn submit(&mut self, balance: BalanceType) -> RequestId {
+    pub fn submit(&mut self, req_id: RequestId, balance: BalanceType) -> RequestId {
         let env = self.env();
-        let req_id = self.next_id.get_or_revert_with(Error::IncorrectRequestId);
 
-        self.next_id.set(
-            req_id
-                .checked_add(RequestId::from(1))
-                .unwrap_or_revert_with(&env, Error::RequestIdExhausted),
-        );
+        let req = self.requests.get_or_default(&req_id);
+        if req.is_some() {
+            env.revert(Error::RequestIdAlreadyUserd);
+        }
 
         let caller = env.caller();
         let request = Request { caller, balance };
@@ -241,7 +238,8 @@ mod tests {
 
         let (mut ownable, env, owner) = setup();
 
-        let req_id = ownable.submit(balance);
+        let req_id = RequestId::from(0);
+        ownable.submit(req_id, balance);
 
         let request = ownable.get_request(req_id);
         assert!(request.is_some());
@@ -261,7 +259,8 @@ mod tests {
 
         let new_owner = env.get_account(1);
         env.set_caller(new_owner);
-        let req_id = ownable.submit(balance);
+        let req_id = RequestId::from(0);
+        ownable.submit(req_id, balance);
 
         env.set_caller(owner);
         let request = ownable.get_request(req_id);
